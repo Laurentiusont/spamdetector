@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Spam Detection</title>
+    <script src="{% static 'detector/script.js' %}"></script>
+</head>
+{% block content %}
+    <h2>Text Spam Detection</h2>
+    {% csrf_token %}
+ 
+    <form id="predict-form">
+        <label for="message">Message:</label>
+        <textarea id="message" name="message" rows="4" cols="50"></textarea>
+        <button type="submit">Predict</button>
+    </form>
+    <p id="prediction-result"></p>
+    <script>
+        document.getElementById('predict-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+ 
+    const message = document.getElementById('message').value;
+    const response = await fetch('/predict/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: `message=${encodeURIComponent(message)}`
+    });
+ 
+    if (response.ok) {
+        const result = await response.json();
+        document.getElementById('prediction-result').innerText = `Prediction: ${result.prediction}`;
+    } else {
+        document.getElementById('prediction-result').innerText = 'Error: Failed to predict';
+    }
+}); 
+    </script>
+{% endblock %}
